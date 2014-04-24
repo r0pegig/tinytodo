@@ -5,27 +5,40 @@ def indent(lines, count, ch=' '):
     return padding + (u'\n' + padding).join(lines.split(u'\n'))
 
 class Task:
+
     def __init__(self, text):
         self.text = text
         self.subtasks = []
-        self.parent = None
+
     def add_subtask(self, task, position=-1):
+        if type(task) == unicode or type(task) == str:
+            task = Task(task)
         if position == -1:
             self.subtasks.append(task)
             return
         self.subtasks.insert(position, task)
-    def get_text(self, with_subtasks=False):
-        if not with_subtasks:
-            return self.text
-        text = u''
-        for i, task in enumerate(self.subtasks):
-            text = text + task.get_text(with_subtasks=True).strip() + u'\n'
-        text = self.text + u'\n' + indent(text, 2)
+
+class Project(Task):
+    pass
+
+class TaskFormatter:
+
+    @staticmethod
+    def format_task(task, indent):
+        text = ' ' * indent + '- ' + task.text + '\n'
+        for subtask in task.subtasks:
+            text = text + TaskFormatter.format_task(subtask, indent + 2)
         return text
 
-task = Task(u"main task")
-task.add_subtask(Task(u"subtask 1"))
-task.add_subtask(Task(u"subtask 2"))
-print task.get_text()
-print task.get_text(with_subtasks=True)
+    @staticmethod
+    def format(task):
+        return TaskFormatter.format_task(task, 0)        
+
+    
+task = Project("main task")
+task.add_subtask(u"subtask 1")
+task.add_subtask(u"subtask 2", 0)
+task.subtasks[0].add_subtask(u"aaaa")
+task.subtasks[0].add_subtask(u"bbb")
+print TaskFormatter.format(task)
 
